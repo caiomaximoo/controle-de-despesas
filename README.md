@@ -1,7 +1,7 @@
 # Controle de Despesas Pessoais
 
 Aplicação web moderna, intuitiva e segura para gestão de finanças e despesas pessoais com isolamento estrito entre contas de usuários.
-Link: https://controle-de-despesas-q6yd.onrender.com/login
+Link: https://controle-de-despesas-q6yd.onrender.com
 
 ---
 
