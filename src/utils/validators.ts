@@ -19,9 +19,13 @@ export function validateExpenseForm(data: {
     errors.description = 'A descrição deve ter ao menos 2 caracteres.';
   }
 
-  const numAmount = typeof data.amount === 'string' ? parseFloat(data.amount) : data.amount;
+  const rawAmount = typeof data.amount === 'string'
+    ? data.amount.replace(',', '.').trim()
+    : data.amount;
+  const numAmount = parseFloat(String(rawAmount));
+
   if (isNaN(numAmount) || numAmount <= 0) {
-    errors.amount = 'O valor deve ser maior que zero.';
+    errors.amount = 'O valor deve ser maior que zero (ex: 25,50).';
   }
 
   if (!data.category || data.category.trim().length === 0) {

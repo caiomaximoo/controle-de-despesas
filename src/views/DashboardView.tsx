@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card } from '../components/common/Card';
 import { StatCard } from '../components/dashboard/StatCard';
 import { ExpenseChart } from '../components/dashboard/ExpenseChart';
@@ -20,6 +20,7 @@ import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
+  RotateCw,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -32,34 +33,34 @@ export const DashboardView: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
 
-  // Período padrão: mês atual
-  const [currentDate, setCurrentDate] = useState(new Date());
+  // Período controlado pelo seletor de mês
+  const [currentDate, setCurrentDate] = useState(() => new Date());
 
-  const getMonthRange = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const lastDay = new Date(year, date.getMonth() + 1, 0).getDate();
+  const handlePrevMonth = () => {
+    setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+  };
+
+  // useMemo para evitar criar um novo objeto a cada render e causar loop de re-renderização
+  const selectedMonthRange = useMemo(() => {
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const lastDay = new Date(year, currentDate.getMonth() + 1, 0).getDate();
     return {
       start: `${year}-${month}-01`,
       end: `${year}-${month}-${String(lastDay).padStart(2, '0')}`,
     };
-  };
+  }, [currentDate]);
 
-  const handlePrevMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
-  };
-
-  const handleNextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
-  };
-
-  const selectedMonthRange = getMonthRange(currentDate);
   const formattedMonthLabel = currentDate.toLocaleDateString('pt-BR', {
     month: 'long',
     year: 'numeric',
   });
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     setErrorMessage(null);
@@ -77,11 +78,21 @@ export const DashboardView: React.FC = () => {
       setExpenses(data);
     }
     setLoading(false);
-  };
+  }, [user, selectedMonthRange.start, selectedMonthRange.end]);
 
   useEffect(() => {
     fetchDashboardData();
-  }, [user, selectedMonthRange]);
+
+    // Atualização automática quando qualquer despesa for criada, editada ou removida no sistema
+    const handleAutoUpdate = () => {
+      fetchDashboardData();
+    };
+
+    window.addEventListener('expenses-updated', handleAutoUpdate);
+    return () => {
+      window.removeEventListener('expenses-updated', handleAutoUpdate);
+    };
+  }, [fetchDashboardData]);
 
   // Cálculos de indicadores
   const totalAmount = expenses.reduce((acc, curr) => acc + Number(curr.amount), 0);
@@ -170,7 +181,19 @@ export const DashboardView: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            onClick={() => fetchDashboardData()}
+            disabled={loading}
+            leftIcon={<RotateCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />}
+            title="Atualizar dados do painel"
+          >
+            Atualizar
+          </Button>
+
           <Button
             type="button"
             variant="primary"
@@ -225,18 +248,18 @@ export const DashboardView: React.FC = () => {
       {/* Seção Gráfico e Despesas Recentes */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Gráfico de Gastos por Categoria */}
-        <div className="lg:col-span-5">
+        <div className="lg:col-span-5 min-w-0">
           <Card
             title="Gastos por Categoria"
             subtitle="Distribuição percentual das despesas"
-            className="h-full"
+            className="h-full overflow-hidden"
           >
             <ExpenseChart data={categorySummary} />
           </Card>
         </div>
 
         {/* Lista de Despesas Recentes */}
-        <div className="lg:col-span-7">
+        <div className="lg:col-span-7 min-w-0">
           <Card
             title="Despesas Recentes"
             subtitle="Últimos lançamentos registrados"

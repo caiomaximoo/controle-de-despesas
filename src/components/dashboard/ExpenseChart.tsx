@@ -54,8 +54,8 @@ export const ExpenseChart: React.FC<ExpenseChartProps> = ({ data }) => {
   };
 
   return (
-    <div className="w-full h-72">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="w-full h-[280px] min-w-0" style={{ minHeight: 280 }}>
+      <ResponsiveContainer width="100%" height={280}>
         <PieChart>
           <Pie
             data={chartData}

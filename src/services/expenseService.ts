@@ -1,6 +1,12 @@
 import { supabase } from '../lib/supabase';
 import { Expense, ExpenseFilters } from '../types';
 
+function notifyExpensesChanged() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('expenses-updated'));
+  }
+}
+
 export const expenseService = {
   async getExpenses(filters?: ExpenseFilters): Promise<{ data: Expense[]; error: Error | null }> {
     try {
@@ -80,6 +86,7 @@ export const expenseService = {
         .single();
 
       if (error) return { data: null, error: new Error(error.message) };
+      notifyExpensesChanged();
       return { data: data as Expense, error: null };
     } catch (err: any) {
       return { data: null, error: err };
@@ -108,6 +115,7 @@ export const expenseService = {
         .single();
 
       if (error) return { data: null, error: new Error(error.message) };
+      notifyExpensesChanged();
       return { data: data as Expense, error: null };
     } catch (err: any) {
       return { data: null, error: err };
@@ -122,6 +130,7 @@ export const expenseService = {
         .eq('id', id);
 
       if (error) return { error: new Error(error.message) };
+      notifyExpensesChanged();
       return { error: null };
     } catch (err: any) {
       return { error: err };

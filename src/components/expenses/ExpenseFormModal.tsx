@@ -34,7 +34,14 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
   const [notes, setNotes] = useState('');
   const [errors, setErrors] = useState<ExpenseValidationErrors>({});
 
-  const todayIso = new Date().toISOString().split('T')[0];
+  // Data local do usuário (evita shift de fuso horário UTC)
+  const getTodayLocalDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   useEffect(() => {
     if (expenseToEdit) {
@@ -47,7 +54,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
       setDescription('');
       setAmount('');
       setCategory('Alimentação');
-      setDate(todayIso);
+      setDate(getTodayLocalDate());
       setNotes('');
     }
     setErrors({});
@@ -68,9 +75,11 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
       return;
     }
 
+    const parsedAmount = parseFloat(amount.replace(',', '.'));
+
     await onSubmit({
       description: description.trim(),
-      amount: parseFloat(amount),
+      amount: parsedAmount,
       category,
       date,
       notes: notes.trim() || null,
@@ -106,13 +115,13 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
           <Input
             label="Valor (R$)"
             required
-            type="number"
-            step="0.01"
-            min="0.01"
+            type="text"
+            inputMode="decimal"
             placeholder="0,00"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             error={errors.amount}
+            helperText="Aceita vírgula ou ponto (ex: 25,50)"
           />
 
           <Input

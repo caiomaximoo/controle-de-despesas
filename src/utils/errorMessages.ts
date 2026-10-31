@@ -61,3 +61,4 @@ export function translateErrorMessage(error: any): string {
   // Mensagem genérica caso nenhuma regra bata
   return message;
 }
+

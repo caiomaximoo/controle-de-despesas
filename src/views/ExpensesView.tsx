@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ExpenseTable } from '../components/expenses/ExpenseTable';
 import { ExpenseFilterBar } from '../components/expenses/ExpenseFilterBar';
 import { ExpenseFormModal } from '../components/expenses/ExpenseFormModal';
@@ -10,7 +10,7 @@ import { expenseService } from '../services/expenseService';
 import { Expense, ExpenseFilters, Category } from '../types';
 import { formatCurrency, getCurrentMonthRange } from '../utils/formatters';
 import { translateErrorMessage } from '../utils/errorMessages';
-import { Plus } from 'lucide-react';
+import { Plus, RotateCw } from 'lucide-react';
 
 export const ExpensesView: React.FC = () => {
   const { user } = useAuth();
@@ -38,7 +38,7 @@ export const ExpensesView: React.FC = () => {
   const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const fetchExpenses = async () => {
+  const fetchExpenses = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     setErrorMessage(null);
@@ -50,11 +50,21 @@ export const ExpensesView: React.FC = () => {
       setExpenses(data);
     }
     setLoading(false);
-  };
+  }, [user, filters]);
 
   useEffect(() => {
     fetchExpenses();
-  }, [user, filters]);
+
+    // Atualização em tempo real quando outra aba ou modal salvar algo
+    const handleAutoUpdate = () => {
+      fetchExpenses();
+    };
+
+    window.addEventListener('expenses-updated', handleAutoUpdate);
+    return () => {
+      window.removeEventListener('expenses-updated', handleAutoUpdate);
+    };
+  }, [fetchExpenses]);
 
   const handleResetFilters = () => {
     setFilters({
@@ -137,7 +147,19 @@ export const ExpensesView: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            onClick={() => fetchExpenses()}
+            disabled={loading}
+            leftIcon={<RotateCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />}
+            title="Recarregar lista"
+          >
+            Atualizar
+          </Button>
+
           <Button
             type="button"
             variant="primary"
