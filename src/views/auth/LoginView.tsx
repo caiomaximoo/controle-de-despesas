@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { Wallet, Mail, Lock, AlertCircle } from 'lucide-react';
+import { translateErrorMessage } from '../../utils/errorMessages';
 
 export const LoginView: React.FC = () => {
   const navigate = useNavigate();
@@ -28,11 +29,7 @@ export const LoginView: React.FC = () => {
     setLoading(false);
 
     if (error) {
-      if (error.message.includes('Invalid login credentials')) {
-        setErrorMessage('E-mail ou senha incorretos.');
-      } else {
-        setErrorMessage(error.message);
-      }
+      setErrorMessage(translateErrorMessage(error));
     } else {
       navigate('/');
     }
@@ -132,3 +129,4 @@ export const LoginView: React.FC = () => {
     </div>
   );
 };
+

@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { expenseService } from '../services/expenseService';
 import { Expense, ExpenseFilters, Category } from '../types';
 import { formatCurrency, getCurrentMonthRange } from '../utils/formatters';
+import { translateErrorMessage } from '../utils/errorMessages';
 import { Plus } from 'lucide-react';
 
 export const ExpensesView: React.FC = () => {
@@ -44,7 +45,7 @@ export const ExpensesView: React.FC = () => {
 
     const { data, error } = await expenseService.getExpenses(filters);
     if (error) {
-      setErrorMessage('Erro ao carregar despesas: ' + error.message);
+      setErrorMessage(translateErrorMessage(error));
     } else {
       setExpenses(data);
     }
@@ -88,7 +89,7 @@ export const ExpensesView: React.FC = () => {
     if (expenseToEdit) {
       const { error } = await expenseService.updateExpense(expenseToEdit.id, data);
       if (error) {
-        alert('Erro ao atualizar despesa: ' + error.message);
+        alert(translateErrorMessage(error));
         return;
       }
     } else {
@@ -97,7 +98,7 @@ export const ExpensesView: React.FC = () => {
         user_id: user.id,
       });
       if (error) {
-        alert('Erro ao cadastrar despesa: ' + error.message);
+        alert(translateErrorMessage(error));
         return;
       }
     }
@@ -115,7 +116,7 @@ export const ExpensesView: React.FC = () => {
     setIsDeleting(false);
 
     if (error) {
-      alert('Erro ao excluir despesa: ' + error.message);
+      alert(translateErrorMessage(error));
     } else {
       setExpenseToDelete(null);
       fetchExpenses();

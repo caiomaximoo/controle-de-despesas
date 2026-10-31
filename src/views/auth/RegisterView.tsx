@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { Wallet, User, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import { translateErrorMessage } from '../../utils/errorMessages';
 
 export const RegisterView: React.FC = () => {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ export const RegisterView: React.FC = () => {
     setLoading(false);
 
     if (error) {
-      setErrorMessage(error.message);
+      setErrorMessage(translateErrorMessage(error));
     } else {
       setSuccessMessage('Conta criada com sucesso! Você já pode entrar.');
       setTimeout(() => {
@@ -161,3 +162,4 @@ export const RegisterView: React.FC = () => {
     </div>
   );
 };
+

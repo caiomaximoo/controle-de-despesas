@@ -10,6 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { expenseService } from '../services/expenseService';
 import { Expense, Category } from '../types';
 import { formatCurrency, formatDate } from '../utils/formatters';
+import { translateErrorMessage } from '../utils/errorMessages';
 import {
   DollarSign,
   Receipt,
@@ -71,7 +72,7 @@ export const DashboardView: React.FC = () => {
     });
 
     if (error) {
-      setErrorMessage('Erro ao carregar despesas: ' + error.message);
+      setErrorMessage(translateErrorMessage(error));
     } else {
       setExpenses(data);
     }
@@ -123,7 +124,7 @@ export const DashboardView: React.FC = () => {
       setIsAddModalOpen(false);
       fetchDashboardData();
     } else {
-      alert('Erro ao salvar despesa: ' + error.message);
+      alert(translateErrorMessage(error));
     }
   };
 

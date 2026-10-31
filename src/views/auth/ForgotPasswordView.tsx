@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { Wallet, Mail, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
+import { translateErrorMessage } from '../../utils/errorMessages';
 
 export const ForgotPasswordView: React.FC = () => {
   const { resetPassword, isConfigured } = useAuth();
@@ -28,7 +29,7 @@ export const ForgotPasswordView: React.FC = () => {
     setLoading(false);
 
     if (error) {
-      setErrorMessage(error.message);
+      setErrorMessage(translateErrorMessage(error));
     } else {
       setSuccessMessage('Um e-mail de recuperação foi enviado com instruções para redefinição da senha.');
     }
